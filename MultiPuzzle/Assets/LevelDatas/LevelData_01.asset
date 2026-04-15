@@ -20,4 +20,13 @@ MonoBehaviour:
 
     1 1 0 0
 
-    1 0 0 0'
+    1 0 0 1'
+  blocks:
+  - id: 0
+    width: 2
+    height: 2
+    shape: 01000000010000000100000001000000
+  - id: 1
+    width: 2
+    height: 2
+    shape: 00000000010000000100000000000000

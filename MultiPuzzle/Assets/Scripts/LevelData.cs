@@ -7,4 +7,5 @@ public class LevelData : ScriptableObject
 
     [TextArea(5, 10)]
     public string layout;
+    public BlockData[] blocks;
 }
