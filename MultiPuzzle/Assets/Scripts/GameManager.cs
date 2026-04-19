@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     [SerializeField] private LevelData levelData;
     [SerializeField] private BoardRenderer renderer;
     [SerializeField] private BlockSpawner blockSpawner;
@@ -9,11 +11,28 @@ public class GameManager : MonoBehaviour
 
     private Board board;
 
+    void Awake()
+    {
+        // Singleton setup
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
     void Start()
     {
         board = new Board(levelData);
         renderer.Render(board);
 
         blocks = blockSpawner.SpawnBlocks(levelData);
+    }
+
+    public Board GetBoard()
+    {
+        return board;
     }
 }

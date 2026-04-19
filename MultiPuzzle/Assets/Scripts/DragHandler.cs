@@ -1,28 +1,39 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
 public class DragHandler : MonoBehaviour
 {
     private bool isDragging;
+    private bool isPlaced = false;
     private Vector3 offset;
+    private Vector3 startPosition;
+    private BlockSnapper snapper;
 
     [SerializeField] private float idleScale = 0.5f;
-    [SerializeField] private float dragScale = 1f;
+    [SerializeField] private float normalScale = 1f;
+    [SerializeField] private float fingerOffset = 1.5f;
 
+    private void Awake()
+    {
+        snapper = FindFirstObjectByType<BlockSnapper>();
+    }
     private void Start()
     {
         transform.localScale = Vector3.one * idleScale;
+        startPosition = transform.position;
     }
 
     private void OnMouseDown()
     {
-
         isDragging = true;
 
         Vector3 mousePos = GetMouseWorldPosition();
+
+        // calculate offset so block doesn't jump
         offset = transform.position - mousePos;
 
-        transform.localScale = Vector3.one * dragScale;
+        transform.localScale = Vector3.one * normalScale;
     }
 
     private void OnMouseDrag()
@@ -30,13 +41,33 @@ public class DragHandler : MonoBehaviour
         if (!isDragging) return;
 
         Vector3 mousePos = GetMouseWorldPosition();
-        transform.position = mousePos + offset;
+
+        transform.position = new Vector3(
+            mousePos.x + offset.x,
+            mousePos.y + offset.y + fingerOffset,
+            0
+        );
     }
 
     private void OnMouseUp()
     {
+        if (isPlaced) return;
+
         isDragging = false;
 
+        if (snapper != null && snapper.TrySnapAndPlace(transform))
+        {
+            // successfully placed
+            isPlaced = true;
+
+            transform.localScale = Vector3.one;
+
+            enabled = false; // lock block
+            return;
+        }
+
+        // failed → return to start
+        transform.position = startPosition;
         transform.localScale = Vector3.one * idleScale;
     }
 

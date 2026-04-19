@@ -68,4 +68,28 @@ public class Board
         }
         return true;
     }
+
+    public Vector3 GridToWorld(int x, int y)
+    {
+        float offsetX = (width - 1) / 2f;
+        float offsetY = (height - 1) / 2f;
+
+        return new Vector3(
+            x - offsetX,
+            y - offsetY,
+            0
+        );
+    }
+
+    public Vector2Int WorldToGrid(Vector3 worldPos)
+    {
+        float offsetX = (width - 1) / 2f;
+        float offsetY = (height - 1) / 2f;
+
+        int x = Mathf.RoundToInt(worldPos.x + offsetX);
+        int y = Mathf.RoundToInt(worldPos.y + offsetY);
+
+        return new Vector2Int(x, y);
+    }
+
 }
