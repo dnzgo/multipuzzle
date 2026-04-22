@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         board = new Board(levelData);
+        board.SetWorldOrigin(renderer.GetBoardWorldOrigin());
         renderer.Render(board);
 
         blocks = blockSpawner.SpawnBlocks(levelData);

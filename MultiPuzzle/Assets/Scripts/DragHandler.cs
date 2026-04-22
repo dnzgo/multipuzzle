@@ -8,7 +8,11 @@ public class DragHandler : MonoBehaviour
     private bool isPlaced = false;
     private Vector3 offset;
     private Vector3 startPosition;
+    private Vector2Int[] currentPlacedCells;
+    private Vector2Int[] previousPlacedCells;
+    private bool releasedPlacedCellsThisDrag;
     private BlockSnapper snapper;
+    private BlockSpawner blockSpawner;
 
     [SerializeField] private float idleScale = 0.5f;
     [SerializeField] private float normalScale = 1f;
@@ -17,6 +21,7 @@ public class DragHandler : MonoBehaviour
     private void Awake()
     {
         snapper = FindFirstObjectByType<BlockSnapper>();
+        blockSpawner = FindFirstObjectByType<BlockSpawner>();
     }
     private void Start()
     {
@@ -27,6 +32,21 @@ public class DragHandler : MonoBehaviour
     private void OnMouseDown()
     {
         isDragging = true;
+        releasedPlacedCellsThisDrag = false;
+
+        // Allow repositioning: free previous occupied cells while dragging this block.
+        if (isPlaced && snapper != null && currentPlacedCells != null)
+        {
+            previousPlacedCells = (Vector2Int[])currentPlacedCells.Clone();
+            snapper.SetCellsState(currentPlacedCells, CellState.SHAPE);
+            currentPlacedCells = null;
+            isPlaced = false;
+            releasedPlacedCellsThisDrag = true;
+        }
+        else
+        {
+            previousPlacedCells = null;
+        }
 
         Vector3 mousePos = GetMouseWorldPosition();
 
@@ -51,24 +71,28 @@ public class DragHandler : MonoBehaviour
 
     private void OnMouseUp()
     {
-        if (isPlaced) return;
-
         isDragging = false;
 
-        if (snapper != null && snapper.TrySnapAndPlace(transform))
+        if (snapper != null && snapper.TrySnapAndPlace(transform, out var placedCells))
         {
-            // successfully placed
+            // successfully placed (first time or reposition)
             isPlaced = true;
+            currentPlacedCells = placedCells;
+            previousPlacedCells = null;
+            releasedPlacedCellsThisDrag = false;
 
             transform.localScale = Vector3.one;
-
-            enabled = false; // lock block
+            if (blockSpawner != null)
+                blockSpawner.RemoveFromPreview(this);
             return;
         }
 
-        // failed → return to start
-        transform.position = startPosition;
-        transform.localScale = Vector3.one * idleScale;
+        // failed drop: return to preview list for both initial placement and reposition attempts.
+        previousPlacedCells = null;
+        currentPlacedCells = null;
+        isPlaced = false;
+        releasedPlacedCellsThisDrag = false;
+        ReturnToPreview();
     }
 
     private Vector3 GetMouseWorldPosition()
@@ -80,5 +104,28 @@ public class DragHandler : MonoBehaviour
         world.z = 0;
 
         return world;
+    }
+
+    public void SetPreviewPosition(Vector3 previewPosition)
+    {
+        startPosition = previewPosition;
+        transform.position = startPosition;
+        transform.localScale = Vector3.one * idleScale;
+    }
+
+    private void ReturnToPreview()
+    {
+        if (blockSpawner != null && blockSpawner.ReturnToPreview(this))
+            return;
+
+        transform.position = startPosition;
+        transform.localScale = Vector3.one * idleScale;
+    }
+
+    public void SetScales(float previewScale, float dragScale)
+    {
+        idleScale = previewScale;
+        normalScale = dragScale;
+        transform.localScale = Vector3.one * idleScale;
     }
 }

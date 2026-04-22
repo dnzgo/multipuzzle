@@ -14,89 +14,128 @@ public class BlockSnapper : MonoBehaviour
 
     public bool TrySnapAndPlace(Transform blockRoot)
     {
-        Vector2Int baseGrid;
+        Vector2Int[] _;
+        return TrySnapAndPlace(blockRoot, out _);
+    }
 
-        // 1. check if close enough to snap
-        if (!TryGetSnapGrid(blockRoot, out baseGrid))
+    public bool TrySnapAndPlace(Transform blockRoot, out Vector2Int[] placedCells)
+    {
+        placedCells = null;
+
+        if (Board == null)
             return false;
 
-        // 2. validate placement
-        if (!CanPlace(blockRoot, baseGrid))
+        Vector2Int[] targetCells;
+
+        // 1. snap each cell to nearest grid cell and validate placement
+        if (!TryGetSnappedCells(blockRoot, out targetCells))
             return false;
 
-        // 3. place block
-        Place(blockRoot, baseGrid);
+        // 2. place block
+        Place(blockRoot, targetCells);
+        placedCells = targetCells;
 
         return true;
     }
 
-    private bool TryGetSnapGrid(Transform blockRoot, out Vector2Int gridPos)
+    public void SetCellsState(Vector2Int[] cells, CellState state)
     {
-        gridPos = Vector2Int.zero;
+        if (Board == null || cells == null)
+            return;
 
-        Transform anchor = blockRoot.GetChild(0);
+        for (int i = 0; i < cells.Length; i++)
+        {
+            Vector2Int pos = cells[i];
 
-        Vector3 worldPos = anchor.position;
+            if (Board.IsOutOfBounds(pos.x, pos.y))
+                continue;
 
-        gridPos = Board.WorldToGrid(worldPos);
+            Board.SetCellState(pos.x, pos.y, state);
+        }
 
-        Vector3 gridWorld = Board.GridToWorld(gridPos.x, gridPos.y);
-
-        float distance = Vector2.Distance(worldPos, gridWorld);
-
-        float snapThreshold = 0.3f;
-
-        return distance <= snapThreshold;
+        LogBoardStates($"Board cell states after SetCellsState -> {state}:");
     }
 
-        private bool CanPlace(Transform blockRoot, Vector2Int baseGrid)
+    private bool TryGetSnappedCells(Transform blockRoot, out Vector2Int[] targetCells)
     {
-        Transform anchor = blockRoot.GetChild(0);
+        int count = blockRoot.childCount;
+        targetCells = new Vector2Int[count];
 
-        foreach (Transform cell in blockRoot)
+        for (int i = 0; i < count; i++)
         {
-            Vector2Int cellGrid = Board.WorldToGrid(cell.position);
-
-            Vector2Int offset = cellGrid - Board.WorldToGrid(anchor.position);
-            Vector2Int finalPos = baseGrid + offset;
+            Transform cell = blockRoot.GetChild(i);
+            Vector2Int finalPos = Board.WorldToGrid(cell.position);
 
             if (Board.IsOutOfBounds(finalPos.x, finalPos.y))
+            {
+                targetCells = null;
                 return false;
+            }
 
             var boardCell = Board.GetCell(finalPos.x, finalPos.y);
 
             if (boardCell.State != CellState.SHAPE)
+            {
+                targetCells = null;
                 return false;
+            }
+
+            targetCells[i] = finalPos;
         }
 
         return true;
     }
 
-        private void Place(Transform blockRoot, Vector2Int baseGrid)
+    private void Place(Transform blockRoot, Vector2Int[] targetCells)
     {
-        Transform anchor = blockRoot.GetChild(0);
-
-        foreach (Transform cell in blockRoot)
+        for (int i = 0; i < targetCells.Length; i++)
         {
-            Vector2Int cellGrid = Board.WorldToGrid(cell.position);
-
-            Vector2Int offset = cellGrid - Board.WorldToGrid(anchor.position);
-            Vector2Int finalPos = baseGrid + offset;
-
+            Vector2Int finalPos = targetCells[i];
             Board.SetCellState(finalPos.x, finalPos.y, CellState.FILLED);
         }
 
-        SnapVisual(blockRoot, baseGrid);
+        SnapVisual(blockRoot, targetCells);
+        LogBoardStates("Board cell states after placement:");
     }
 
-        private void SnapVisual(Transform blockRoot, Vector2Int gridPos)
+    private void SnapVisual(Transform blockRoot, Vector2Int[] targetCells)
     {
         Transform anchor = blockRoot.GetChild(0);
-
-        Vector3 target = Board.GridToWorld(gridPos.x, gridPos.y);
+        Vector3 target = Board.GridToWorld(targetCells[0].x, targetCells[0].y);
         Vector3 delta = target - anchor.position;
 
         blockRoot.position += delta;
+    }
+
+    private void LogBoardStates(string title)
+    {
+        if (Board == null)
+            return;
+
+        Debug.Log($"{title} size={Board.Width}x{Board.Height}");
+
+        for (int y = Board.Height - 1; y >= 0; y--)
+        {
+            string row = string.Empty;
+            for (int x = 0; x < Board.Width; x++)
+            {
+                Cell cell = Board.GetCell(x, y);
+                row += ToCellChar(cell != null ? cell.State : CellState.EMPTY);
+                if (x < Board.Width - 1) row += " ";
+            }
+            Debug.Log($"row {y}: {row}");
+        }
+    }
+
+    private char ToCellChar(CellState state)
+    {
+        switch (state)
+        {
+            case CellState.EMPTY: return 'E';
+            case CellState.SHAPE: return 'S';
+            case CellState.FILLED: return 'F';
+            default: return '?';
+        }
     }
 
 }

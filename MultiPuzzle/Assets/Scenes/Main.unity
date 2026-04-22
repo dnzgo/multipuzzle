@@ -198,6 +198,8 @@ MonoBehaviour:
   blockPrefab: {fileID: 1796846995657022591, guid: b311dd47e62a74c3ebaeee714926a4f5, type: 3}
   blockCellPrefab: {fileID: 3232304135604277240, guid: 20306fb4f0df94f5bb4749223124ea83, type: 3}
   spawnParent: {fileID: 1396393996}
+  previewSpacing: 1.5
+  targetPreviewHeight: 0.5
 --- !u!4 &749663555
 Transform:
   m_ObjectHideFlags: 0
@@ -419,7 +421,7 @@ Transform:
   m_GameObject: {fileID: 1396393995}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -2, z: 0}
+  m_LocalPosition: {x: -1.5, y: -2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

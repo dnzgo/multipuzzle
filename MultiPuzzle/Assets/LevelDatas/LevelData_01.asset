@@ -27,6 +27,14 @@ MonoBehaviour:
     height: 2
     shape: 01000000010000000100000001000000
   - id: 1
+    width: 1
+    height: 1
+    shape: 01000000
+  - id: 2
     width: 2
-    height: 2
-    shape: 00000000010000000000000000000000
+    height: 3
+    shape: 010000000100000001000000010000000100000001000000
+  - id: 3
+    width: 2
+    height: 1
+    shape: 0100000001000000

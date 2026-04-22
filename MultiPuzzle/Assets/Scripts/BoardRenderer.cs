@@ -7,6 +7,11 @@ public class BoardRenderer : MonoBehaviour
 
     private GameObject[,] visuals;
 
+    public Vector3 GetBoardWorldOrigin()
+    {
+        return parent != null ? parent.position : transform.position;
+    }
+
     public void Render(Board board)
     {
         visuals = new GameObject[board.Width, board.Height];

@@ -5,6 +5,7 @@ public class Board
     private int width;
     private int height;
     private Cell[,] cells;
+    private Vector3 worldOrigin;
 
     public int Width => width;
     public int Height => height;
@@ -13,6 +14,7 @@ public class Board
     {
         width = levelData.width;
         height = levelData.height;
+        worldOrigin = Vector3.zero;
 
         cells = new Cell[width, height];
 
@@ -69,14 +71,19 @@ public class Board
         return true;
     }
 
+    public void SetWorldOrigin(Vector3 origin)
+    {
+        worldOrigin = origin;
+    }
+
     public Vector3 GridToWorld(int x, int y)
     {
         float offsetX = (width - 1) / 2f;
         float offsetY = (height - 1) / 2f;
 
         return new Vector3(
-            x - offsetX,
-            y - offsetY,
+            worldOrigin.x + x - offsetX,
+            worldOrigin.y + y - offsetY,
             0
         );
     }
@@ -86,8 +93,8 @@ public class Board
         float offsetX = (width - 1) / 2f;
         float offsetY = (height - 1) / 2f;
 
-        int x = Mathf.RoundToInt(worldPos.x + offsetX);
-        int y = Mathf.RoundToInt(worldPos.y + offsetY);
+        int x = Mathf.RoundToInt((worldPos.x - worldOrigin.x) + offsetX);
+        int y = Mathf.RoundToInt((worldPos.y - worldOrigin.y) + offsetY);
 
         return new Vector2Int(x, y);
     }
