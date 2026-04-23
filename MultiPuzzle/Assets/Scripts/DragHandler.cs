@@ -31,6 +31,11 @@ public class DragHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // check if input is disabled
+        if (!GameStateManager.Instance.IsGameplayActive) return;
+
+        // START TIMER ON FIRST TOUCH
+        GameManager.Instance.StartLevelTimerIfNeeded();
         isDragging = true;
         releasedPlacedCellsThisDrag = false;
 
@@ -58,6 +63,9 @@ public class DragHandler : MonoBehaviour
 
     private void OnMouseDrag()
     {
+        // check if input is disabled
+        if (!GameStateManager.Instance.IsGameplayActive) return;
+
         if (!isDragging) return;
 
         Vector3 mousePos = GetMouseWorldPosition();
@@ -71,6 +79,9 @@ public class DragHandler : MonoBehaviour
 
     private void OnMouseUp()
     {
+        // check if input is disabled
+        if (!GameStateManager.Instance.IsGameplayActive) return;
+
         isDragging = false;
 
         if (snapper != null && snapper.TrySnapAndPlace(transform, out var placedCells))

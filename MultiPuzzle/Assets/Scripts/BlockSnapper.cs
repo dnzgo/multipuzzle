@@ -35,6 +35,12 @@ public class BlockSnapper : MonoBehaviour
         Place(blockRoot, targetCells);
         placedCells = targetCells;
 
+        // 🔥 CHECK LEVEL COMPLETE HERE
+        if (Board.IsCompleted())
+        {
+            GameManager.Instance.HandleLevelCompleted();
+        }
+
         return true;
     }
 
@@ -53,7 +59,7 @@ public class BlockSnapper : MonoBehaviour
             Board.SetCellState(pos.x, pos.y, state);
         }
 
-        LogBoardStates($"Board cell states after SetCellsState -> {state}:");
+        //LogBoardStates($"Board cell states after SetCellsState -> {state}:");
     }
 
     private bool TryGetSnappedCells(Transform blockRoot, out Vector2Int[] targetCells)
@@ -95,7 +101,7 @@ public class BlockSnapper : MonoBehaviour
         }
 
         SnapVisual(blockRoot, targetCells);
-        LogBoardStates("Board cell states after placement:");
+        //LogBoardStates("Board cell states after placement:");
     }
 
     private void SnapVisual(Transform blockRoot, Vector2Int[] targetCells)

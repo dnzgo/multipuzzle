@@ -4,6 +4,7 @@ using UnityEngine;
 public class LevelData : ScriptableObject
 {
     public int width, height;
+    public float timeLimit = 60f; 
 
     [TextArea(5, 10)]
     public string layout;
